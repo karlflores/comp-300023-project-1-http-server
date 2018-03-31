@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <ctype.h>
 #include "server.h"
+#include "http_library.h"
+
 //main file for the server
 int main(int argc, char **argv){
 
@@ -18,6 +20,16 @@ int main(int argc, char **argv){
   char path_root[strlen(argv[2])+1];
   int port_num = atoi(argv[1]);
   strcpy(path_root,argv[2]);
+
+  //test get request
+  char *file_path = process_get_request("GET sdhfksjhfkj HTTP/1.0");
+  fprintf(stdout,"%s\n",file_path);
+
+
+
+  //call the server function
+  int sever_fd = server(port_num,path_root);
+  free(file_path);
 
   //fprintf(stdout,"PORT NUM: %d\n",port_num);
   //fprintf(stdout,"PATH: %s\n",path_root);

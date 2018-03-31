@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -std=c99
 
-SRC1 = server.c
-OBJ1 = server.o
+SRC1 = server.c main.c http_library.c
+OBJ1 = server.o main.o http_library.o
 
 EXE1 = SimpleHTTPServer
 
