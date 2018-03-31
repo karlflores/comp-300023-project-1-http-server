@@ -8,7 +8,7 @@ int server(int port,const char *path_root){
   protocol_struct = getprotobyname("tcp");
 
   //socket file descriptor
-  int socket_fd, new_sockfd;
+  int socket_fd, client_sockfd;
 
   int n;
 
@@ -23,6 +23,9 @@ int server(int port,const char *path_root){
   server_addr.sin_port = htons(port);
   //connect to any address
   server_addr.sin_addr.s_addr = INADDR_ANY;
+
+  //file pointers
+  int send_fd;
 
   // buffer declaration
   char buffer[BUFFER_SIZE];
@@ -39,6 +42,7 @@ int server(int port,const char *path_root){
   //bind the socket to the specific port
   if(bind(socket_fd,(struct sockaddr*)&server_addr,sizeof(server_addr)) < 0){
     perror("ERROR: Unable to bind socket\n");
+    close(socket_fd);
     exit(EXIT_FAILURE);
   }
 
@@ -56,32 +60,109 @@ int server(int port,const char *path_root){
 
   client_addr_len = sizeof(client_addr);
 
-  if((new_sockfd = accept(socket_fd,(struct sockaddr*)&client_addr,
-  &client_addr_len)) < 0){
-    //then there is an error
-    perror("ERROR: Could not accept connection\n");
-    exit(EXIT_FAILURE);
-  }
-  printf("ACCEPTED MESSAGE\n");
+  //accept connections until user terminates the server
+  while(TRUE){
+    if((client_sockfd = accept(socket_fd,(struct sockaddr*)&client_addr,
+    &client_addr_len)) < 0){
+      //then there is an error
+      perror("ERROR: Could not accept connection\n");
+      close(socket_fd);
+      exit(EXIT_FAILURE);
+    }
+    printf("ACCEPTED MESSAGE\n");
 
-  //know that if we get here, then we have accepted a connection
-  memset(&buffer,0,sizeof(buffer));
-  if((n = read(new_sockfd,buffer,255)) <0){
-    perror("ERROR: Could not read from socket");
-    exit(EXIT_FAILURE);
-  }
+    //know that if we get here, then we have accepted a connection
+    memset(&buffer,0,sizeof(buffer));
+    if((n = read(client_sockfd,buffer,255)) <0){
+      perror("ERROR: Could not read from socket");
+      exit(EXIT_FAILURE);
+    }
 
-  fprintf(stdout,"REQUEST: %s\n",buffer);
+    fprintf(stdout,"REQUEST: %s\n",buffer);
 
-  //write the acknowledgement HEADER FILE;
-  if((n = write(new_sockfd,"REQUEST RECIEVED\n",18)< 0)){
-    perror("ERROR: Could not write to socket\n");
-    exit(EXIT_FAILURE);
-  }
+    //write the acknowledgement HEADER FILE;
+    if((n = write(client_sockfd,"REQUEST RECIEVED\n",18)< 0)){
+      perror("ERROR: Could not write to socket\n");
+      close(socket_fd);
+      exit(EXIT_FAILURE);
+    }
+    //get the file path
+    char *file_path = process_get_request(buffer);
+    printf("FILE PATH: %s : VALID: %d\n",file_path,is_valid_extension(file_path));
 
+
+    //process the file path
+    int final_filepath_len = strlen(file_path) + strlen(path_root);
+    char full_filepath[final_filepath_len+1];
+    int path_index = 0;
+
+    for(int i = 0;i<strlen(path_root);i++,path_index++){
+      full_filepath[path_index] = path_root[i];
+    }
+    for(int i = 0;i<strlen(file_path);i++,path_index++){
+      full_filepath[path_index] = file_path[i];
+    }
+    full_filepath[path_index] = '\0';
+
+    printf("FINAL PATH: %s",full_filepath);
+
+    //open the file
+    if(is_valid_extension(file_path)== FALSE){
+      perror("ERROR: file extension is not valid\n");
+      continue;
+    }
+    if((send_fd = open(full_filepath,O_RDONLY)) < 0){
+      perror("ERROR: could not find file -- need to send 404\n");
+      continue;
+    }
+
+    //if we get to this stage, the file does exist, therefore we can send it
+    //over the socket
+    if((n = write(client_sockfd,"SENDING FILE...\n",18))<0){
+      perror("ERROR: sending file confirmation message\n");
+    }
+    //get the size of the file using stat
+
+    //create the stat struct and use stat
+    struct stat file_stat;
+    stat(full_filepath,&file_stat);
+
+    //send the file over the socket.
+    sendfile(client_sockfd,send_fd,NULL,file_stat.st_size+1);
+
+}
   //close the socket
   close(socket_fd);
 
 
   return 0;
+}
+
+int is_valid_extension(const char *file){
+  char buffer[BUFFER_SIZE];
+  strcpy(buffer,file);
+
+  //tokenise the file based on '.'
+  char *token = strtok(buffer,".\n ");
+  if(token== NULL){
+    return FALSE;
+  }
+  //tokenise again to get the filetype
+  token = strtok(NULL,".\n");
+  //printf("FILE EXT: %s",token);
+
+  // check if the token is a valid file extension
+  if(strcmp(token,"js")==0){
+    return TRUE;
+  }else if(strcmp(token,"html")==0){
+    return TRUE;
+  }else if(strcmp(token,"jpg")==0){
+    return TRUE;
+  }else if(strcmp(token,"css")==0){
+    return TRUE;
+  }else{
+    return FALSE;
+  }
+
+
 }
