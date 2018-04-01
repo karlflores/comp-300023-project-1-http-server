@@ -20,7 +20,7 @@
 #define BUFFER_SIZE 256
 #define TRUE 1
 #define FALSE 0
-#define NUM_THREADS 10
+#define NUM_THREADS 5
 //strcture for client_accept_send
 struct client_send_t {
   int conn_fd;
