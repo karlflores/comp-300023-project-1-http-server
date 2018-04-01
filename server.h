@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <ctype.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -13,14 +12,15 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "http_library.h"
 #include <sys/sendfile.h>
+
+#include "http_library.h"
 
 #define CONNECTION_BACKLOG 10
 #define BUFFER_SIZE 256
 #define TRUE 1
 #define FALSE 0
-#define NUM_THREADS 4
+#define NUM_THREADS 10
 //strcture for client_accept_send
 struct client_send_t {
   int conn_fd;
@@ -42,3 +42,6 @@ int is_valid_extension(const char *file);
 void *client_accept_runner(void *client_struct);
 
 char *build_full_path(const char *path_root,const char *file_path);
+
+//send the file over the socket in chunks
+int send_file(const int dest_fd,const int src_fd, const ssize_t src_size);

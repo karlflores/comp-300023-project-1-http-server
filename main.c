@@ -22,14 +22,16 @@ int main(int argc, char **argv){
   strcpy(path_root,argv[2]);
 
   //test get request
-  char *file_path = process_get_request("GET sdhfksjhfkj HTTP/1.0");
-  fprintf(stdout,"%s\n",file_path);
-
+  //char *file_path = process_get_request("GET sdhfksjhfkj HTTP/1.0");
+  //fprintf(stdout,"%s\n",file_path);
 
 
   //call the server function
-  int sever_fd = server(port_num,path_root);
-  free(file_path);
+  int server_fd = server(port_num,path_root);
+  if(server_fd!=0){
+    perror("ERROR: could not start server.\n");
+    exit(EXIT_FAILURE);
+  }
 
   //fprintf(stdout,"PORT NUM: %d\n",port_num);
   //fprintf(stdout,"PATH: %s\n",path_root);
