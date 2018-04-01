@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -std=c99
+CFLAGS = -Wall -std=c99 -pthread
 
 SRC1 = server.c main.c http_library.c
 OBJ1 = server.o main.o http_library.o

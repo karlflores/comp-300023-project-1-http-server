@@ -20,6 +20,14 @@
 #define BUFFER_SIZE 256
 #define TRUE 1
 #define FALSE 0
+#define NUM_THREADS 4
+//strcture for client_accept_send
+struct client_send_t {
+  int conn_fd;
+  struct sockaddr_in client_addr;
+  char *path_root;
+  socklen_t client_addr_len;
+};
 
 int server(int port,const char *path_root);
 
@@ -30,3 +38,7 @@ FILE *fetch_file(const char *path_root,const char *file_path);
 //checks if the file extensions are valid MIME TYPES that this server is capable of retrieving.
 //returns TRUE if valid, FALSE if not
 int is_valid_extension(const char *file);
+
+void *client_accept_runner(void *client_struct);
+
+char *build_full_path(const char *path_root,const char *file_path);
