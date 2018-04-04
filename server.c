@@ -37,7 +37,7 @@ int server(int port,const char *path_root){
   struct client_send_t client;
 
   //create the TCP socket
-  socket_fd = socket(AF_INET, SOCK_STREAM,protocol_struct->p_proto);
+  socket_fd = socket(PF_INET, SOCK_STREAM,protocol_struct->p_proto);
 
   //bind the socket to the specific port
   if(bind(socket_fd,(struct sockaddr*)&server_addr,sizeof(server_addr)) < 0){
@@ -88,7 +88,7 @@ int server(int port,const char *path_root){
       }
       printf("THREADS %d JOINED - status: %d\n",i,pt);
     }
-}
+  }
   //close the socket
   close(socket_fd);
 
@@ -98,6 +98,8 @@ int server(int port,const char *path_root){
   return 0;
 }
 
+//returns boolean if the extension is valid according to the mime types of the
+//server
 int is_valid_extension(const char *file){
   char buffer[BUFFER_SIZE];
   strcpy(buffer,file);
@@ -263,33 +265,3 @@ void *client_accept_runner(void *client_struct){
   sleep(1);
   pthread_exit(0);
 }
-/*
-//send the file over the socket in chunks
-int send_file(const int dest_fd,const int src_df, ssize_t src_size){
-  ssize_t bytes_read = 0;
-  ssize_t bytes_write = 0;
-  ssize_t curr_read = 0;
-  ssize_t curr_write = 0;
-  //set the buffer up
-  char buffer[MAX_BUFF_SIZE];
-  //clear the buffer
-  memset(buffer,0,sizeof(buffer));
-  while(bytes_read<src_size){
-    //read into the buffer
-    curr_read = read(src_df,buffer,MAX_BUFF_SIZE);
-    if(curr_read == 0){
-      //did not read any bytes
-    }else if(curr_read < 0){
-      perror("ERROR: could not read into buffer.\n");
-      return -1;
-    }
-    bytes_read+=curr_read;
-  }
-
-  //read into the buffer
-
-
-
-
-}
-*/
