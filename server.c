@@ -10,7 +10,6 @@ int server(int port,const char *path_root){
   //socket file descriptor
   int socket_fd;
 
-
   //server and client address structre -- set to zero
   struct sockaddr_in server_addr, client_addr;
   memset(&server_addr,0,sizeof(server_addr));
@@ -154,6 +153,8 @@ char *build_full_path(const char *path_root,const char *file_path){
 //variable -- open file in read_only -> returns a new file descriptor pointing
 //to the same file.
 void *client_accept_runner(void *client_struct){
+
+
   //check if client_struct points to null
   if(client_struct == NULL){
     perror("ERROR: client_accept_runner - NULL pointer argument\n");
@@ -168,6 +169,9 @@ void *client_accept_runner(void *client_struct){
   struct sockaddr_in client_addr = client->client_addr;
   socklen_t client_addr_len = client->client_addr_len;
   char *path_root = client->path_root;
+
+  // http response struct
+  struct http_struct http_response;
 
   //initialise the buffer
   char buffer[BUFFER_SIZE];
@@ -186,6 +190,9 @@ void *client_accept_runner(void *client_struct){
       //exit the thread
       pthread_exit(0);
   }
+  // set the the socket file descriptor in the http struct
+  http_response.sock_fd = client_sockfd;
+
   //printf("ACCEPTED MESSAGE FROM CLIENT %d\n",client_sockfd);
 
   //know that if we get here, then we have accepted a connection
@@ -202,6 +209,9 @@ void *client_accept_runner(void *client_struct){
   char *file_path = process_get_request(buffer);
   //printf("FILE PATH: %s : VALID: %d\n",file_path,is_valid_extension(file_path));
 
+  // set the file path fields and the sock file descriptor fields of the
+  // http response struct -- these wont change during the call
+  http_response.file_path = file_path;
 
   //process the file path
   char *full_filepath = build_full_path(path_root,file_path);
@@ -210,7 +220,8 @@ void *client_accept_runner(void *client_struct){
   if(is_valid_extension(file_path)== FALSE){
     perror("ERROR: file extension is not valid\n");
     //send 404 response if the file extension is not valid
-    n = send_response(client_sockfd,file_path,404);
+    http_response.response = 404;
+    n = send_response(&http_response);
     if(n!=0){
       //could not send response
       perror("ERROR: could not send HTTP response\n");
@@ -223,7 +234,9 @@ void *client_accept_runner(void *client_struct){
   if((file_send_fd = open(full_filepath,O_RDONLY)) < 0){
     perror("ERROR: could not find file -- need to send 404\n");
     //send 404 response then exit the pthread;
-    if((n = send_response(client_sockfd,file_path,404))!=0){
+    http_response.response = 404;
+
+    if((n = send_response(&http_response))!=0){
       perror("ERROR: could not send HTTP/1.0 response.\n");
     }
     close(client_sockfd);
@@ -233,10 +246,13 @@ void *client_accept_runner(void *client_struct){
   //if we get to this stage, the file does exist, therefore we can send it
   //over the socket
 
-  //send the HTTP request first
-  if((n = send_response(client_sockfd,file_path,200))<0){
+  //send the HTTP request first -- send a 200 response
+  http_response.response = 200;
+
+  if((n = send_response(&http_response))<0){
     perror("ERROR: could not send HTTP/1.0 response.\n");
   }
+
   //get the size of the file using stat
   //create the stat struct and use stat
   struct stat file_stat;
@@ -246,6 +262,7 @@ void *client_accept_runner(void *client_struct){
 
   //replace this with write/read -- need to make a function to read a file
   //in chunks and send through the socket
+
   if((n = sendfile(client_sockfd,file_send_fd,NULL,file_stat.st_size)) < 0){
     //error has occured sending the file
     perror("ERROR: could not send file\n");

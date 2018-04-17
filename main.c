@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <ctype.h>
 #include "server.h"
-#include "http_library.h"
 
 //main file for the server
 int main(int argc, char **argv){

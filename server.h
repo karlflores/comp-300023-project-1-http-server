@@ -20,7 +20,8 @@
 #define BUFFER_SIZE 256
 #define TRUE 1
 #define FALSE 0
-#define NUM_THREADS 5
+#define NUM_THREADS 10
+
 //strcture for client_accept_send
 struct client_send_t {
   int conn_fd;
@@ -31,14 +32,11 @@ struct client_send_t {
 
 int server(int port,const char *path_root);
 
-//this returns the file pointer for the specific path
-// if there is no file it returns NULL
-FILE *fetch_file(const char *path_root,const char *file_path);
-
 //checks if the file extensions are valid MIME TYPES that this server is capable of retrieving.
 //returns TRUE if valid, FALSE if not
 int is_valid_extension(const char *file);
 
+//multithreading function -- processes client connections
 void *client_accept_runner(void *client_struct);
 
 char *build_full_path(const char *path_root,const char *file_path);
