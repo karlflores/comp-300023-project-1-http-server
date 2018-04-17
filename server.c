@@ -1,5 +1,7 @@
 #include "server.h"
-//this returns the
+
+
+// main server function -- this starts the server
 int server(int port,const char *path_root){
 
   //struct addrinfo hints, *server_info;
@@ -75,7 +77,7 @@ int server(int port,const char *path_root){
         perror("ERROR: could not create thread\n");
         exit(EXIT_FAILURE);
       }
-      printf("THREAD %d Created - status: %d\n",i,pt);
+      printf("THREAD %d Created - status: %d\n",i,pt_ids[i]);
     }
 
     //wait for all of the threads to finish processing files
@@ -97,7 +99,7 @@ int server(int port,const char *path_root){
   return 0;
 }
 
-//returns boolean if the extension is valid according to the mime types of the
+//returns true if the extension is valid according to the mime types of the
 //server
 int is_valid_extension(const char *file){
   char buffer[BUFFER_SIZE];
@@ -193,7 +195,7 @@ void *client_accept_runner(void *client_struct){
   // set the the socket file descriptor in the http struct
   http_response.sock_fd = client_sockfd;
 
-  //printf("ACCEPTED MESSAGE FROM CLIENT %d\n",client_sockfd);
+  printf("ACCEPTED REQUEST FROM CLIENT %d\n",client_sockfd);
 
   //know that if we get here, then we have accepted a connection
   //read from socket into the buffer
@@ -203,7 +205,7 @@ void *client_accept_runner(void *client_struct){
     pthread_exit(0);
   }
 
-  //fprintf(stdout,"REQUEST: %s\n",buffer);
+  fprintf(stdout,"REQUEST: %s\n",buffer);
 
   //get the file path
   char *file_path = process_get_request(buffer);
@@ -279,6 +281,6 @@ void *client_accept_runner(void *client_struct){
   free(file_path);
   free(full_filepath);
 
-  sleep(1);
+  //sleep(1);
   pthread_exit(0);
 }
