@@ -77,7 +77,7 @@ int server(int port,const char *path_root){
         perror("ERROR: could not create thread\n");
         exit(EXIT_FAILURE);
       }
-      printf("THREAD %d Created - status: %d\n",i,pt_ids[i]);
+      printf("THREAD %d Created - status: %lu\n",i,pt_ids[i]);
     }
 
     //wait for all of the threads to finish processing files
