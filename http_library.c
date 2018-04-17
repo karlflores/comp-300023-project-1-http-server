@@ -1,5 +1,4 @@
 #include "http_library.h"
-// #include "server.h"
 
 //returns the file_path to the file that needs to be fetched
 char *process_get_request(const char *request){

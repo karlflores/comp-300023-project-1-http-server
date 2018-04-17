@@ -1,6 +1,5 @@
 #include "server.h"
 
-
 // main server function -- this starts the server
 int server(int port,const char *path_root){
 
@@ -112,7 +111,6 @@ int is_valid_extension(const char *file){
   }
   //tokenise again to get the filetype
   token = strtok(NULL,".\n");
-  //printf("FILE EXT: %s",token);
 
   // check if the token is a valid file extension
   if(strcmp(token,"js")==0){
@@ -209,7 +207,6 @@ void *client_accept_runner(void *client_struct){
 
   //get the file path
   char *file_path = process_get_request(buffer);
-  //printf("FILE PATH: %s : VALID: %d\n",file_path,is_valid_extension(file_path));
 
   // set the file path fields and the sock file descriptor fields of the
   // http response struct -- these wont change during the call
@@ -217,7 +214,6 @@ void *client_accept_runner(void *client_struct){
 
   //process the file path
   char *full_filepath = build_full_path(path_root,file_path);
-  //printf("FINAL PATH: %s",full_filepath);
 
   if(is_valid_extension(file_path)== FALSE){
     perror("ERROR: file extension is not valid\n");
