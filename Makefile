@@ -12,4 +12,4 @@ $(EXE1): $(OBJ1) Makefile
 	$(CC) $(CFLAGS) -o $(EXE1) $(OBJ1) -g
 
 clean:
-	rm -f $(OBJ) $(EXE)
+	rm -f $(OBJ1) $(EXE1)
