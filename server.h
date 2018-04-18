@@ -22,7 +22,7 @@
 #define FALSE 0
 #define NUM_THREADS 10
 
-//strcture for client_accept_send
+// struct containing the information to the thread worker call
 struct client_send_t {
   int conn_fd;
   struct sockaddr_in client_addr;
@@ -32,15 +32,13 @@ struct client_send_t {
 
 int server(int port,const char *path_root);
 
-//checks if the file extensions are valid MIME TYPES that this server is capable of retrieving.
+//checks if the file extensions are valid MIME TYPES that this server is
+//capable of retrieving.
 //returns TRUE if valid, FALSE if not
 int is_valid_extension(const char *file);
 
 //multithreading function -- processes client connections
-void *client_accept_runner(void *client_struct);
+void *client_accept_send(void *client_struct);
 
+//build full file path from root path and file path 
 char *build_full_path(const char *path_root,const char *file_path);
-
-// -- FUNCTION TO DO --
-//send the file over the socket in chunks
-int send_file(const int dest_fd,const int src_fd, const ssize_t src_size);

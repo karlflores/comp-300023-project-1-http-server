@@ -1,6 +1,11 @@
 #include "server.h"
 
-// main server function -- this starts the server
+/* main server function -- this starts the server on a specified port
+* and a specified root directory
+* @param port -- specific port to run the socket over
+* @param path_root -- string contanting the relative or absolute file path
+* @return -- error handling (0 if Success, EXIT_FAILURE if Failure)
+*/
 int server(int port,const char *path_root){
 
   //struct addrinfo hints, *server_info;
@@ -69,7 +74,7 @@ int server(int port,const char *path_root){
       pthread_attr_init(&pt_attr);
 
       //create the pthreads and call the client accept function
-      int pt = pthread_create(&pt_ids[i],&pt_attr,client_accept_runner,
+      int pt = pthread_create(&pt_ids[i],&pt_attr,client_accept_send,
         (void*)&client);
 
       //error checking on the thread that has been created
@@ -99,8 +104,11 @@ int server(int port,const char *path_root){
   return 0;
 }
 
-//returns true if the extension is valid according to the mime types of the
-//server
+/*returns true if the extension is valid according to the mime types of the
+* @param file -- string that represents the file name including extension
+* @return -- if the file extension is valid according to the MIME types of
+* the server
+*/
 int is_valid_extension(const char *file){
   char buffer[BUFFER_SIZE];
   strcpy(buffer,file);
@@ -127,8 +135,14 @@ int is_valid_extension(const char *file){
   }
 }
 
-//builds the full file path from the path_root and a file_path string
-//returns an allocated memory space -- therefore need to free after use
+/*builds the full file path from the path_root and a file_path string
+* returns an allocated memory space -- therefore need to free after use
+
+* @param path_root -- string of the file path to the root
+* @param file_path -- string of the file path relative to the root
+* @return full_filepath -- memory allocated space containing the full file
+* path
+*/
 char *build_full_path(const char *path_root,const char *file_path){
 
     int final_filepath_len = strlen(file_path) + strlen(path_root);
@@ -147,18 +161,21 @@ char *build_full_path(const char *path_root,const char *file_path){
     return full_filepath;
 }
 
-//function for pthread processing
+/*function for pthread processing
 //this handles the incoming connection requests by a thread
 
 //no need for mutex lock -- no race conditions as not accessing a shared
 //variable -- open file in read_only -> returns a new file descriptor pointing
 //to the same file.
-void *client_accept_runner(void *client_struct){
+
+* @param client_struct : see client struct
+*/
+void *client_accept_send(void *client_struct){
 
 
   //check if client_struct points to null
   if(client_struct == NULL){
-    perror("ERROR: client_accept_runner - NULL pointer argument\n");
+    perror("ERROR: client_accept_send - NULL pointer argument\n");
     pthread_exit(0);
   }
   //typecase the client_struct to the relavent pointer type
@@ -257,7 +274,7 @@ void *client_accept_runner(void *client_struct){
   struct stat file_stat;
   stat(full_filepath,&file_stat);
 
-  //send the file over the socket
+  //send the file over the socket using sendfile system call
   if((n = sendfile(client_sockfd,file_send_fd,NULL,file_stat.st_size)) < 0){
     //error has occured sending the file
     perror("ERROR: could not send file\n");
@@ -265,8 +282,7 @@ void *client_accept_runner(void *client_struct){
     pthread_exit(0);
   }
 
-  //if we get down here we have done all we needed and we can exit the
-  //pthread;
+  //if we get down here we have done all we needed and we can exit the pthread
   close(file_send_fd);
   close(client_sockfd);
 
