@@ -69,7 +69,8 @@ int server(int port,const char *path_root){
       pthread_attr_init(&pt_attr);
 
       //create the pthreads and call the client accept function
-      int pt = pthread_create(&pt_ids[i],&pt_attr,client_accept_runner,(void*)&client);
+      int pt = pthread_create(&pt_ids[i],&pt_attr,client_accept_runner,
+        (void*)&client);
 
       //error checking on the thread that has been created
       if(pt !=0){
@@ -256,11 +257,7 @@ void *client_accept_runner(void *client_struct){
   struct stat file_stat;
   stat(full_filepath,&file_stat);
 
-  //send the file over the socket. need to implement non sendfile
-
-  //replace this with write/read -- need to make a function to read a file
-  //in chunks and send through the socket
-
+  //send the file over the socket
   if((n = sendfile(client_sockfd,file_send_fd,NULL,file_stat.st_size)) < 0){
     //error has occured sending the file
     perror("ERROR: could not send file\n");
