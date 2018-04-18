@@ -40,7 +40,3 @@ int is_valid_extension(const char *file);
 void *client_accept_runner(void *client_struct);
 
 char *build_full_path(const char *path_root,const char *file_path);
-
-// -- FUNCTION TO DO --
-//send the file over the socket in chunks
-int send_file(const int dest_fd,const int src_fd, const ssize_t src_size);
