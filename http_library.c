@@ -1,6 +1,11 @@
 #include "http_library.h"
 
-//returns the file_path to the file that needs to be fetched
+/* returns the file_path to the file that needs to be fetched
+
+* @param request -- string containing the request
+* @return -- memory allocated space containing the file_path
+
+*/
 char *process_get_request(const char *request){
   /* assume that the get request is in the format
     GET file_path HTTP/VERSION
@@ -30,7 +35,11 @@ char *process_get_request(const char *request){
   //remember to free the file_path once finished
 }
 
-//sends the htpp response to the specified socket
+/*sends the htpp response to the specified socket based on information in the
+* http_resopnse struct -- allows for extension if needed
+*
+* @param http_response: see http_struct
+*/
 int send_response(struct http_struct *http_response){
 
   // convert the struct into relavent data entries
