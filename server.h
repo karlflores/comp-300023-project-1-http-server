@@ -46,4 +46,5 @@ char *build_full_path(const char *path_root,const char *file_path);
 // Own function for sending a file through the socket
 int send_file(int client_sock_fd, int file_fd, size_t file_size);
 
+// Validate the file path from the http request 
 int is_valid_file_path(const char *file_path);
