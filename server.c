@@ -230,10 +230,22 @@ void *client_accept_send(void *client_struct){
   // http response struct -- these wont change during the call
   http_response.file_path = file_path;
 
+  //validate the file path
+  if(is_valid_file_path(file_path) == FALSE){
+    //this is not a valid file path
+    http_response.response = 404;
+    n = send_response(&http_response);
+    if( n!=0){
+      perror("ERROR: could not send HTTP response\n");
+    }
+    close(client_sockfd);
+    pthread_exit(0);
+  }
+
   //process the file path
   char *full_filepath = build_full_path(path_root,file_path);
 
-  if(is_valid_extension(file_path)== FALSE){
+  if(is_valid_extension(file_path) == FALSE){
     perror("ERROR: file extension is not valid\n");
     //send 404 response if the file extension is not valid
     http_response.response = 404;
@@ -276,12 +288,13 @@ void *client_accept_send(void *client_struct){
 
   //send the file over the socket using sendfile system call
   if((n = sendfile(client_sockfd,file_send_fd,NULL,file_stat.st_size)) < 0){
+  //if((n=send_file(client_sockfd,file_send_fd,file_stat.st_size))<0){
     //error has occured sending the file
     perror("ERROR: could not send file\n");
     close(client_sockfd);
     pthread_exit(0);
   }
-
+  printf("FILE: %s Successfully Sent to client\n",file_path);
   //if we get down here we have done all we needed and we can exit the pthread
   close(file_send_fd);
   close(client_sockfd);
@@ -292,4 +305,84 @@ void *client_accept_send(void *client_struct){
 
   //sleep(1);
   pthread_exit(0);
+}
+
+// Own function for sending a file through the socket
+// Note: did not use this implementation in the final program -- this wa
+int send_file(int client_sock_fd, int file_fd, size_t file_size){
+  // the number of bytes to read
+  size_t bytes_to_read = file_size;
+
+  char send_buffer[BUFFER_SIZE];
+  memset(send_buffer,0,sizeof(char)*BUFFER_SIZE);
+
+  // the number of bytes to send in the buffer
+  size_t bytes_to_send = BUFFER_SIZE;
+
+  int n;
+
+  // while loop to send the whole file through the socket
+  while(bytes_to_send > 0){
+      // set the bytes to send to being the remaining bytes to read if
+      // if the bytes to read is less than the bytes to send, then we know that
+      // this is the last chunk to send through
+      if(bytes_to_read < bytes_to_send){
+        bytes_to_send = bytes_to_read;
+      }
+      // read in the number of bytes to send
+      read(file_fd, send_buffer,bytes_to_send);
+
+      //once read in we can write it to the client
+      if((n=write(client_sock_fd,send_buffer,bytes_to_send))<0){
+        perror("send_file: could not write send_buffer to socket\n");
+
+        // return an error
+        return FAILURE;
+      }
+
+      //update the numbes to read in
+      bytes_to_read-=bytes_to_send;
+      memset(send_buffer,0,sizeof(char)*BUFFER_SIZE);
+  }
+  // if we get here we know that we have send the correct number of bytes
+  // assert this
+  if(bytes_to_read == 0){
+    return SUCCESS;
+  }else{
+    perror("send_file: incorrect number of bytes sent\n");
+    return FAILURE;
+  }
+}
+
+// assert the file path in the buffer -- check if there is one dot in the file
+// extension
+int is_valid_file_path(const char *file_path){
+  //printf("CALLED THIS\n");
+  char buffer[BUFFER_SIZE];
+  memset(buffer,0,BUFFER_SIZE);
+
+  // copy the file path to the buffer
+  strcpy(buffer,file_path);
+
+  // keeps track the number of periods in the file path
+  int num_dot = 0;
+  // iterator
+  int i = 0;
+
+  // iterate through the string counting the number of dots
+  // a file path is valid if it has one dot -- not counting the dot at the start
+  while(i<strlen(buffer)){
+    if(buffer[i]== '.' && i!=0){
+      //printf(".\n");
+      num_dot++;
+    }
+    i++;
+  }
+
+  // checks the number of dots found
+  if(num_dot == 1){
+    return TRUE;
+  }else{
+    return FALSE;
+  }
 }
