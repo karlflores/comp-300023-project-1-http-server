@@ -308,7 +308,7 @@ void *client_accept_send(void *client_struct){
 }
 
 // Own function for sending a file through the socket
-// Note: did not use this implementation in the final program -- this wa
+// Note: did not use this implementation in the final program 
 int send_file(int client_sock_fd, int file_fd, size_t file_size){
   // the number of bytes to read
   size_t bytes_to_read = file_size;
