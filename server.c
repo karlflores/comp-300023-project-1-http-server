@@ -82,7 +82,7 @@ int server(int port,const char *path_root){
         perror("ERROR: could not create thread\n");
         exit(EXIT_FAILURE);
       }
-      printf("THREAD %d Created - status: %lu\n",i,pt_ids[i]);
+      //printf("THREAD %d Created - status: %lu\n",i,pt_ids[i]);
     }
 
     //wait for all of the threads to finish processing files
@@ -92,7 +92,7 @@ int server(int port,const char *path_root){
       if(pt!=0){
         perror("ERROR: unable to join thread.\n");
       }
-      printf("THREADS %d JOINED - status: %d\n",i,pt);
+      //printf("THREADS %d JOINED - status: %d\n",i,pt);
     }
   }
   //close the socket
@@ -157,7 +157,7 @@ char *build_full_path(const char *path_root,const char *file_path){
       full_filepath[path_index] = file_path[i];
     }
     full_filepath[path_index] = '\0';
-    fprintf(stderr,"%s\n",full_filepath);
+    //fprintf(stdout,"%s\n",full_filepath);
     return full_filepath;
 }
 
@@ -211,7 +211,7 @@ void *client_accept_send(void *client_struct){
   // set the the socket file descriptor in the http struct
   http_response.sock_fd = client_sockfd;
 
-  printf("ACCEPTED REQUEST FROM CLIENT %d\n",client_sockfd);
+  //printf("ACCEPTED REQUEST FROM CLIENT %d\n",client_sockfd);
 
   //know that if we get here, then we have accepted a connection
   //read from socket into the buffer
@@ -221,7 +221,7 @@ void *client_accept_send(void *client_struct){
     pthread_exit(0);
   }
 
-  fprintf(stdout,"REQUEST: %s\n",buffer);
+  //fprintf(stdout,"REQUEST: %s\n",buffer);
 
   //get the file path
   char *file_path = process_get_request(buffer);
@@ -294,7 +294,7 @@ void *client_accept_send(void *client_struct){
     close(client_sockfd);
     pthread_exit(0);
   }
-  printf("FILE: %s Successfully Sent to client\n",file_path);
+  //printf("FILE: %s Successfully Sent to client\n",file_path);
   //if we get down here we have done all we needed and we can exit the pthread
   close(file_send_fd);
   close(client_sockfd);
@@ -366,6 +366,7 @@ int is_valid_file_path(const char *file_path){
 
   // keeps track the number of periods in the file path
   int num_dot = 0;
+
   // iterator
   int i = 0;
 
