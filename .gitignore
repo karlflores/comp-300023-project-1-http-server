@@ -8,3 +8,4 @@ SimpleHTTPServer
 myserver
 test_script.sh
 .DS_Store
+test_log.txt
